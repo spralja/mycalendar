@@ -1,19 +1,16 @@
 from django.db import models
-from django.utils.translation import gettext_lazy as _
 
 
-class DayOfTheWeek(models.Model):
-    class Name(models.TextChoices):
-        MONDAY = 'Monday', _('Monday')
-        TUESDAY = 'Tuesday', _('Tuesday')
-        WEDNESDAY = 'Wednesday', _('Wednesday')
-        THURSDAY = 'Thursday', _('Thursday')
-        FRIDAY = 'Friday', _('Friday')
-        SATURDAY = 'Saturday', _('Saturday')
-        SUNDAY = 'Sunday', _('Sunday')
+class Day(models.Model):
+    time = models.DateField()
 
-    name = models.CharField(choices=Name.choices, max_length=9)
+    def __get_day_ordinal_suffix(self):
+        day = self.time.day
+        if 4 <= day <= 20 or 24 <= day <= 30:
+            return 'th'
+        else:
+            return ['st', 'nd', 'rd'][day % 10 - 1]
 
     def __str__(self):
-        return self.name
-
+        format_string = "%A, %#d" + self.__get_day_ordinal_suffix() + " %B, %Y"
+        return self.time.strftime(format_string)
