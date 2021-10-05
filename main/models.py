@@ -1,16 +1,26 @@
 from django.db import models
 
 
-class Day(models.Model):
-    time = models.DateField()
+class Event(models.Model):
+    title = models.CharField(max_length=25)
+    start_time = models.DateTimeField()
+    end_time = models.DateTimeField()
+    location = models.CharField(max_length=25, blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
 
-    def __get_day_ordinal_suffix(self):
-        day = self.time.day
-        if 4 <= day <= 20 or 24 <= day <= 30:
-            return 'th'
-        else:
-            return ['st', 'nd', 'rd'][day % 10 - 1]
+    def get_week(self):
+        return self.start_time.isocalendar()[1]
 
-    def __str__(self):
-        format_string = "%A, %#d" + self.__get_day_ordinal_suffix() + " %B, %Y"
-        return self.time.strftime(format_string)
+    def get_day(self):
+        string = self.start_time.strftime("%A")
+        switch = {
+           'Monday': 1,
+           'Tuesday': 2,
+           'Wednesday': 3,
+           'Thursday': 4,
+           'Friday': 5,
+           'Saturday': 6,
+           'Sunday': 7,
+        }
+
+        return switch[string]
