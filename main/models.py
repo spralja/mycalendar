@@ -1,5 +1,21 @@
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
+from datetime import datetime, timedelta
 
+
+class Time:
+    def __init__(self, date_time):
+        self.quarter = int(date_time.minute / 15 + 4*date_time.hour)
+        self.day = date_time.weekday()
+        self.week = date_time.isocalendar()[1] - 1
+        self.year = date_time.year
+
+
+class Quarter:
+    def __init__(self, time, color):
+        self.x = time.day
+        self.y = time.quarter
+        self.color = color
 
 class Event(models.Model):
     switch = {
@@ -16,6 +32,7 @@ class Event(models.Model):
     end_time = models.DateTimeField()
     location = models.CharField(max_length=25, blank=True, null=True)
     description = models.TextField(blank=True, null=True)
+    color = models.CharField(max_length=7)
 
     def get_week(self):
         return self.start_time.isocalendar()[1]
@@ -23,3 +40,12 @@ class Event(models.Model):
     def get_day(self):
         string = self.start_time.strftime("%A")
         return self.switch[string]
+
+    def get_times(self):
+        times = []
+        time = self.start_time + timedelta(minutes=15)
+        while time <= self.end_time:
+            times.append(Time(time))
+            time = time + timedelta(minutes=15)
+
+        return times

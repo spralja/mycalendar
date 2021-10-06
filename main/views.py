@@ -1,9 +1,7 @@
-import datetime
-
 from django.http import HttpResponse, Http404
 from django.shortcuts import redirect
 from django.template import loader
-from datetime import date
+from datetime import datetime, date, timedelta
 
 from .models import *
 
@@ -14,11 +12,33 @@ def current(request):
     return redirect('y/current/w/current')
 
 
+def get_index_context(week, year):
+    qs = Event.objects.filter(
+        start_time__gte=datetime.fromisocalendar(year, week, 1),
+        start_time__lt=datetime.fromisocalendar(year, week, 7) + timedelta(days=1),
+        end_time__gte=datetime.fromisocalendar(year, week, 1),
+        end_time__lt=datetime.fromisocalendar(year, week, 7) + timedelta(days=1)
+    )
+    context = []
+    week_size = 7;
+    day_size = 24*4
+    for i in range(day_size):
+        context.append([])
+        for j in range(week_size):
+            context[i].append("#000000")
+
+    for q in qs:
+        times = q.get_times()
+        for time in times:
+            context[time.quarter][time.day] = q.color
+
+    return context
+
 def index(request, year=date.today().year, week=date.today().isocalendar()[1]):
     template = loader.get_template('main/index.html')
     # datetime only supports years between [1,9999]
-    if not (datetime.MINYEAR <= year <= datetime.MAXYEAR):
-        raise Http404("Year %d not supported" % year)
+    #if not (datetime.MINYEAR <= year <= datetime.MAXYEAR):
+    #    raise Http404("Year %d not supported" % year)
 
     if not (week > 0):
         raise Http404("Week has to be positive")
@@ -30,7 +50,7 @@ def index(request, year=date.today().year, week=date.today().isocalendar()[1]):
         'year': year,
         'week': week,
         'days': DAYS,
-        'events': Event.objects.all(),
+        'color_table': get_index_context(week, year)
     }
 
     return HttpResponse(template.render(context, request))

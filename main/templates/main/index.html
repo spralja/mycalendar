@@ -10,21 +10,17 @@
                     <th>{{ day }}</th>
                 {% endfor %}
             </tr>
-            <tr>
-               {% for i in '1234567'|make_list %}
-                   <th>
-                        {% for event in events %}
+             {% for color_row in color_table %}
+                <tr>
+                    {% for color_cell in color_row %}
+                        <th>
+                        <div style="table-layout:fixed; width:150px; height:30px;background-color: {{ color_cell }};">
 
-                            {% if event.get_week == week %}
-                                {{ event.get_day }} - {{ i }}
-                                {% if event.get_day == i %}
-                                    {{ event.title }}
-                                {% endif %}
-                            {% endif %}
-                        {% endfor %}
-                   </th>
-               {% endfor %}
-            </tr>
+                        </div>
+                        </th>
+                    {% endfor %}
+                </tr>
+             {% endfor %}
         </table>
     </body>
 </html>
