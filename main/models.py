@@ -54,6 +54,18 @@ class Event(models.Model):
     def __lt__(self, other):
         return (self.start_time - other.start_time).total_seconds()
 
+    def __str__(self):
+        return "%s\n%02d:%02d - %02d:%02d\n%s" % (
+            self.title, self.start_time.hour, self.start_time.minute,
+            self.end_time.hour, self.end_time.minute, self.description
+        )
+
+    def get_time_frame(self):
+        return "%02d:%02d - %02d:%02d" % (
+            self.start_time.hour, self.start_time.minute,
+            self.end_time.hour, self.start_time.minute
+        )
+
     def get_left(self):
         return "%dpx;" % (150*self.start_time.weekday())
 

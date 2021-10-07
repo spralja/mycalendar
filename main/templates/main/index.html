@@ -5,7 +5,11 @@
     </head>
     <body>
             {% for event in events %}
-                <div style="{{ event.get_style }}"> </div>
+                <div style="{{ event.get_style }}">
+                    {{ event.title }} <br>
+                    {{ event.get_time_frame }} <br>
+                    {{ event.description }}
+                </div>
             {% endfor %}
     </body>
 </html>
