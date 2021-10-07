@@ -17,6 +17,7 @@ class Quarter:
         self.y = time.quarter
         self.color = color
 
+
 class Event(models.Model):
     switch = {
         'Monday': 1,
@@ -49,3 +50,20 @@ class Event(models.Model):
             time = time + timedelta(minutes=15)
 
         return times
+
+    def __lt__(self, other):
+        return (self.start_time - other.start_time).total_seconds()
+
+    def get_left(self):
+        return "%dpx;" % (150*self.start_time.weekday())
+
+    def get_top(self):
+        return "%dpx;" % (self.start_time.hour*20 + int(self.start_time.minute/3))
+
+    def get_height(self):
+        return "%dpx;" % int((self.end_time - self.start_time).total_seconds()/90)
+
+    def get_style(self):
+        return "position:absolute; width:150px; left:" + self.get_left() + " top:" \
+            + self.get_top() + " height:" + self.get_height() \
+            + "background-color:" + self.color + ";"
