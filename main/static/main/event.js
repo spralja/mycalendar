@@ -1,6 +1,6 @@
 class Event {
     static #idToEventDict = {}
-    static addEventListeners(window) {
+    static addEventListeners(window, events) {
         window.addEventListener('mousedown', function(e) {
             for(let i = 0; i < events.length; ++i) {
                 if(events[i].isInside(e.pageX, e.pageY)) {
@@ -25,53 +25,45 @@ class Event {
             }
         })
     }
+
     static fromId(id) {
         return Event.#idToEventDict[id];
     }
 
     #event;
+    #window;
 
-    #isMouseInsideState = false;
-    #isMousePressedState = false;
+    #lastMousePressEventMouseRelativeX;
+    #lastMousePressEventMouseRelativeY;
 
-    constructor(event) {
+    constructor(event, window) {
+        let this_ = this;
         this.isBeingDraggedState = false;
         this.#event = event;
+        this.#window = window;
         Event.#idToEventDict[this.getId()] = this;
-        this.#event.addEventListener('mouseenter', function(e) {
-            let event = Event.fromId(e.target.id);
-            event.#isMouseInsideState = true;
-        });
-
-        this.#event.addEventListener('mouseleave', function(e) {
-            let event = Event.fromId(e.target.id);
-            event.#isMouseInsideState = false;
-        });
-
         this.#event.addEventListener('mousedown', function(e) {
             let event = Event.fromId(e.target.id);
-            event.#isMousePressedState = true;
-            event.lastMousePressEventMouseRelativeX = e.pageX - event.getX();
-            event.lastMousePressEventMouseRelativeY = e.pageY - event.getY();
+            event.#lastMousePressEventMouseRelativeX = e.pageX - event.getX();
+            event.#lastMousePressEventMouseRelativeY = e.pageY - event.getY();
         });
 
-        this.#event.addEventListener('mouseup', function(e) {
-            let event = Event.fromId(e.target.id);
-            event.#isMousePressedState = false;
-            console.log("mouse stopped being pressed");
-        });
-/*
-        this.#event.addEventListener('mousemove', function(e) {
-            let event = Event.fromId(e.target.id);
-            if(event.isMousePressed()) {
-                e.target.style.left = (e.pageX - event.#lastMousePressEventMouseRelativeX) + "px";
-                e.target.style.top = (e.pageY - event.#lastMousePressEventMouseRelativeY) + "px";
+        window.addEventListener('mousedown', function(e) {
+            if(this_.isInside(e.pageX, e.pageY)) {
+                this_.isBeingDraggedState = true;
             }
-        });*/
+        });
 
+        window.addEventListener('mouseup', function(e) {
+            this_.isBeingDraggedState = false;
+        });
 
-
-
+        window.addEventListener('mousemove', function(e) {
+           if(this_.isBeingDragged()) {
+               this_.setX(e.pageX - this_.#lastMousePressEventMouseRelativeX);
+               this_.setY(e.pageY - this_.#lastMousePressEventMouseRelativeY);
+           }
+        })
     }
 
     isBeingDragged() {

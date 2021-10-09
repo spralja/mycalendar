@@ -1,10 +1,6 @@
 let HTMLEvents = document.getElementsByClassName("event");
-let events = [];
-
-
+let _events = [];
 
 for(let i = 0; i < HTMLEvents.length; ++i) {
-    events.push(new Event(HTMLEvents[i]));
+    _events.push(new Event(HTMLEvents[i], window));
 }
-
-Event.addEventListeners(window);
