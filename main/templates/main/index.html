@@ -5,7 +5,7 @@
     </head>
     <body>
             {% for div in divs %}
-                <div class="{{ div.class_ }}" id="{{ div.id }}" style="position: absolute; {{ div.get_style }}">
+                <div class="{{ div.class_ }}" id="{{ div.id_ }}" style="position: absolute; {{ div.get_style }}">
                     {{ div|safe}}
                 </div>
             {% endfor %}

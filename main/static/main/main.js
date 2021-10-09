@@ -1,77 +1,93 @@
-let mouseIsPressed = false;
-
-window.addEventListener('mousedown', function(e) {
-    mouseIsPressed = true;
-})
-
-window.addEventListener('mouseup', function(e) {
-    mouseIsPressed = false;
-})
-
 let HTMLEvents = document.getElementsByClassName("event");
 let events = [];
 
 class Event {
-    static #isMouseInsideDict = {};
-    static #isMousePressedDict = {};
     static #idToEventDict = {}
+    static addEventListeners(window) {
+        window.addEventListener('mousedown', function(e) {
+            for(let i = 0; i < events.length; ++i) {
+                if(events[i].isInside(e.pageX, e.pageY)) {
+                    events[i].isBeingDraggedState = true;
+                }
+            }
+        });
+
+        window.addEventListener('mouseup', function(e) {
+            for(let i = 0; i < events.length; ++i) {
+                events[i].isBeingDraggedState = false;
+            }
+        });
+
+        window.addEventListener('mousemove', function(e) {
+            for(let i = 0; i < events.length; ++i) {
+                let event = events[i];
+                if(event.isBeingDragged()) {
+                    event.setX(e.pageX - event.lastMousePressEventMouseRelativeX);
+                    event.setY(e.pageY - event.lastMousePressEventMouseRelativeY);
+                }
+            }
+        })
+    }
     static fromId(id) {
         return Event.#idToEventDict[id];
     }
 
-    #event = undefined;
+    #event;
+
     #isMouseInsideState = false;
     #isMousePressedState = false;
-    #isBeingDraggedState = false;
-    #lastMousePressEventMouseRelativeX = undefined;
-    #lastMousePressEventMouseRelativeY = undefined;
 
     constructor(event) {
-        this.#event = event
-        Event.#isMouseInsideDict[this.getId()] = false;
-        Event.#isMousePressedDict[this.getId()] = false;
+        this.isBeingDraggedState = false;
+        this.#event = event;
         Event.#idToEventDict[this.getId()] = this;
         this.#event.addEventListener('mouseenter', function(e) {
             let event = Event.fromId(e.target.id);
             event.#isMouseInsideState = true;
-        })
+        });
 
         this.#event.addEventListener('mouseleave', function(e) {
             let event = Event.fromId(e.target.id);
             event.#isMouseInsideState = false;
-        })
+        });
 
         this.#event.addEventListener('mousedown', function(e) {
             let event = Event.fromId(e.target.id);
             event.#isMousePressedState = true;
-            event.#lastMousePressEventMouseRelativeX = e.pageX - event.getX();
-            event.#lastMousePressEventMouseRelativeY = e.pageY - event.getY();
-        })
+            event.lastMousePressEventMouseRelativeX = e.pageX - event.getX();
+            event.lastMousePressEventMouseRelativeY = e.pageY - event.getY();
+        });
 
         this.#event.addEventListener('mouseup', function(e) {
             let event = Event.fromId(e.target.id);
             event.#isMousePressedState = false;
-        })
-
+            console.log("mouse stopped being pressed");
+        });
+/*
         this.#event.addEventListener('mousemove', function(e) {
             let event = Event.fromId(e.target.id);
             if(event.isMousePressed()) {
                 e.target.style.left = (e.pageX - event.#lastMousePressEventMouseRelativeX) + "px";
                 e.target.style.top = (e.pageY - event.#lastMousePressEventMouseRelativeY) + "px";
             }
-        })
-    }
+        });*/
 
-    isMousePressed() {
-        return this.#isMousePressedState;
-    }
 
-    isMouseInside() {
-        return this.#isMouseInsideState;
+
+
     }
 
     isBeingDragged() {
-        return this.#isBeingDraggedState;
+        return this.isBeingDraggedState;
+    }
+
+    isInside(x, y) {
+        return (
+            x >= this.getX() &&
+            x <= (this.getX() + this.getWidth()) &&
+            y >= this.getY() &&
+            y <= (this.getY() + this.getHeight())
+        );
     }
 
     getId() {
@@ -101,56 +117,10 @@ class Event {
     setY(y) {
         this.#event.style.top = `${y}px`
     }
-
-    setWidth(width) {
-        this.#event.style.width = `${width}px`
-    }
-
-    setHeight(height) {
-        this.#event.style.height = `${height}px`
-    }
 }
 
 for(let i = 0; i < HTMLEvents.length; ++i) {
-    events.push(new Event(HTMLEvents[i]))
+    events.push(new Event(HTMLEvents[i]));
 }
 
-
-
-
-
-/*
-let ids = document.getElementsByClassName("event")[0];
-let mouseIsPressedState = false
-let mouseIsInside = false
-window.addEventListener('mousedown', function(e) {
-    mouseIsPressedState = true
-})
-
-window.addEventListener('mouseup', function(e) {
-    mouseIsPressedState = false
-})
-
-window.addEventListener('mousemove', function(e) {
-    mouseIsInside = (e.pageX >= parseInt(ids.style.left.substr(0, 3)) &&
-        e.pageX <= (parseInt(ids.style.left.substr(0, 3)) + parseInt(ids.style.width.substr(0, 3))) &&
-        e.pageY >= parseInt(ids.style.top.substr(0, 3)) &&
-        e.pageY <= parseInt(ids.style.top.substr(0, 3)) + parseInt(ids.style.height.substr(0, 3)))
-    console.log(mouseIsInside)
-    console.log("x = " + e.pageX + "\n")
-    console.log("y = " + e.pageY + "\n")
-    console.log(ids.style.left)
-    console.log(ids.style.top)
-})
-
-window.addEventListener('mousemove', function(e) {
-    if(mouseIsPressedState === true && mouseIsInside === true) {
-        console.log("bananaws")
-        ids.style.left = "" + e.pageX;
-        ids.style.top = "" + e.pageY;
-    }
-})
-
-
-
-*/
+Event.addEventListeners(window);
