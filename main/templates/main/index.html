@@ -5,8 +5,8 @@
     </head>
     <body>
             {% for div in divs %}
-                <div style="border-style: solid; position: absolute; {{ div.get_style }}">
-                    {{ div }}
+                <div style="position: absolute; {{ div.get_style }}">
+                    {{ div|safe}}
                 </div>
             {% endfor %}
     </body>
