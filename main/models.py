@@ -42,15 +42,6 @@ class Event(models.Model):
         string = self.start_time.strftime("%A")
         return self.switch[string]
 
-    def get_times(self):
-        times = []
-        time = self.start_time + timedelta(minutes=15)
-        while time <= self.end_time:
-            times.append(Time(time))
-            time = time + timedelta(minutes=15)
-
-        return times
-
     def __lt__(self, other):
         return (self.start_time - other.start_time).total_seconds()
 
@@ -79,3 +70,29 @@ class Event(models.Model):
         return "position:absolute; width:150px; left:" + self.get_left() + " top:" \
             + self.get_top() + " height:" + self.get_height() \
             + "background-color:" + self.color + ";"
+
+
+class Day:
+    width = 150
+    switch = {
+        0: "Monday",
+        1: "Tuesday",
+        2: "Wednesday",
+        3: "Thursday",
+        4: "Friday",
+        5: "Saturday",
+        6: "Sunday",
+    }
+
+    def __init__(self, index):
+        self.name = self.switch[index]
+        self.left = index*self.width
+
+    def get_left(self):
+        return "%dpx;" % self.left
+
+    def get_style(self):
+        return "position:absolute; width:150px; left:" + self.get_left() + "top:0px;"
+
+    def __str__(self):
+        return self.name

@@ -1,9 +1,12 @@
 <! doctype html>
-<html>
+<html lang="en">
     <head>
-
+        <title>w{{ week }}y{{ year }}</title>
     </head>
     <body>
+            {% for day in days %}
+                <div style="{{ day.get_style }}">{{ day }}</div>
+            {% endfor %}
             {% for event in events %}
                 <div style="{{ event.get_style }}">
                     {{ event.title }} <br>

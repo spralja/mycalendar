@@ -6,7 +6,7 @@ from datetime import datetime, date, timedelta
 from .calendar import Calendar
 from .models import *
 
-DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+DAYS = [Day(index) for index in range(7)]
 
 
 def current(request):
@@ -44,3 +44,4 @@ def index(request, year=date.today().year, week=date.today().isocalendar()[1]):
     }
 
     return HttpResponse(template.render(context, request))
+
