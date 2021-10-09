@@ -21,6 +21,8 @@ class WeekView:
                      border_color="#000000",
                      border_style="solid",
                      border_width="medium",
+                     id_=None,
+                     class_=None,
                      ):
             self.left = left
             self.top = top
@@ -31,6 +33,8 @@ class WeekView:
             self.border_color = border_color
             self.border_style = border_style
             self.border_width = border_width
+            self.id_ = id_
+            self.class_ = class_
             self.style = {
                 'left': self.add_px(left),
                 'top': self.add_px(top),
@@ -105,5 +109,7 @@ class WeekView:
                 150,
                 int((event.end_time - event.start_time).total_seconds() / 3600 * 35),
                 background_color=event.color,
-                text=event.__str__()
+                text=event.__str__(),
+                class_="event",
+                id_="event%d" % event.pk,
             ))
