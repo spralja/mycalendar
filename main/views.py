@@ -3,7 +3,6 @@ from django.shortcuts import redirect
 from django.template import loader
 from datetime import datetime, date, timedelta
 
-from .calendar import Calendar
 from .models import *
 
 DAYS = [Day(index) for index in range(7)]
