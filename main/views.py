@@ -36,11 +36,24 @@ def index(request, year=date.today().year, week=date.today().isocalendar()[1]):
     if not (week <= date(year, 12, 31).isocalendar()[1]):
         raise Http404("Week %d does not exist in %d!, the last week in %d is %d" % (week, year, week, year))
 
-    week_view = WeekView(year, week, get_index_context(year, week))
+    week_view = WeekView(
+        year,
+        week,
+        get_index_context(year, week),
+        x=0,
+        y=0,
+        column_width=150,
+        hour_height=35,
+    )
+
     context = {
         'year': year,
         'week': week,
         'divs': week_view.divs,
+        'week_view_x': week_view.x,
+        'week_view_y': week_view.y,
+        'column_width': week_view.column_width,
+        'hour_height': week_view.hour_height,
     }
 
     return HttpResponse(template.render(context, request))

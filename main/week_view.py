@@ -60,9 +60,13 @@ class WeekView:
         def __str__(self):
             return self.text
 
-    def __init__(self, year, week, events):
+    def __init__(self, year, week, events, x=0, y=0, column_width=150, hour_height=35):
         self.year = year
         self.week = week
+        self.x = x
+        self.y = y
+        self.column_width = column_width
+        self.hour_height = hour_height
         self.divs = []
         next_ = {
             'year': (datetime.fromisocalendar(day=1, week=week, year=year) + timedelta(days=7)).year,
@@ -74,10 +78,10 @@ class WeekView:
             'week': (datetime.fromisocalendar(day=1, week=week, year=year) - timedelta(days=7)).isocalendar()[1],
         }
         self.divs.append(WeekView.Div(
-            0,
-            0,
-            150,
-            35,
+            self.x,
+            self.y,
+            self.column_width,
+            self.hour_height,
             'week %d <a href="/y/%d/w/%d/">prev</a> <a href="/y/%d/w/%d/">next</a>' % (
                 self.week,
                 prev['year'],
@@ -87,27 +91,31 @@ class WeekView:
             )
         ))
         for i in range(WeekView.DAYS_IN_WEEK):
-            self.divs.append(WeekView.Div(150 * (i + 1), 0, 150, 35, WeekView.day_s[i]))
+            self.divs.append(WeekView.Div(
+                self.x + self.column_width * (i + 1), self.y, self.column_width, self.hour_height, WeekView.day_s[i]))
 
         for i in range(WeekView.HOURS_IN_DAY):
             self.divs.append(WeekView.Div(
-                0, 35 * (i + 1), 150, 35, "%02d:00" % i
+                self.x, self.y + self.hour_height * (i + 1), self.column_width, self.hour_height, "%02d:00" % i
             ))
 
         for i in range(WeekView.DAYS_IN_WEEK):
             for j in range(WeekView.HOURS_IN_DAY):
                 self.divs.append(WeekView.Div(
-                    150 * (i + 1), 35 * (j + 1), 150, 35,
+                    self.x + self.column_width * (i + 1), self.y + self.hour_height * (j + 1), self.column_width,
+                    self.hour_height,
                     border_color="#555555", border_style="dashed",
                     border_width="thin"
                 ))
 
         for event in events:
             self.divs.append(WeekView.Div(
-                150 * (event.start_time.weekday() + 1),
-                35 * (event.start_time.hour + 3) + int(event.start_time.minute * 35 / 60),
-                150,
-                int((event.end_time - event.start_time).total_seconds() / 3600 * 35),
+                left=self.x + self.column_width * (event.start_time.weekday() + 1),
+                top=self.y +
+                self.hour_height * (event.start_time.hour + 3) +
+                int(event.start_time.minute * self.hour_height / 60),
+                width=self.column_width,
+                height=int((event.end_time - event.start_time).total_seconds() / 3600 * self.hour_height),
                 background_color=event.color,
                 text=event.__str__(),
                 class_="event",

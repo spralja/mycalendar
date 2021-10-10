@@ -60,8 +60,15 @@ class Event {
 
         window.addEventListener('mousemove', function(e) {
            if(this_.isBeingDragged()) {
-               this_.setX(e.pageX - this_.#lastMousePressEventMouseRelativeX);
-               this_.setY(e.pageY - this_.#lastMousePressEventMouseRelativeY);
+               let x = e.pageX - this_.#lastMousePressEventMouseRelativeX;
+               let y = e.pageY - this_.#lastMousePressEventMouseRelativeY;
+               if(x < WEEK_VIEW_X1 + COLUMN_WIDTH) x = WEEK_VIEW_X1 + COLUMN_WIDTH;
+               if(y < WEEK_VIEW_Y1 + HOUR_HEIGHT) y = WEEK_VIEW_Y1 + HOUR_HEIGHT;
+               if(x + this_.getWidth() > WEEK_VIEW_X2) x = WEEK_VIEW_X2 - this_.getWidth();
+               if(y + this_.getHeight() > WEEK_VIEW_Y2) y = WEEK_VIEW_Y2 - this_.getHeight();
+
+               this_.setX(x);
+               this_.setY(y);
            }
         })
     }

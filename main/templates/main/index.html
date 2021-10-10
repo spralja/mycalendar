@@ -10,8 +10,16 @@
                 </div>
             {% endfor %}
 
+            <script type="text/javascript">
+                const WEEK_VIEW_X1 = {{ week_view_x }};
+                const WEEK_VIEW_Y1 = {{ week_view_y }};
+                const COLUMN_WIDTH = {{ column_width }};
+                const HOUR_HEIGHT = {{ hour_height }};
+                const WEEK_VIEW_X2 = WEEK_VIEW_X1 + COLUMN_WIDTH*8;
+                const WEEK_VIEW_Y2 = WEEK_VIEW_Y1 + HOUR_HEIGHT*25;
+            </script>
         {% load static %}
-            <script src="{% static 'main/event.js' %}"></script>
-            <script src="{% static 'main/main.js' %}"></script>
+            <script src="{% static 'main/event.js' %}" type="text/javascript"></script>
+            <script src="{% static 'main/main.js' %}" type="text/javascript"></script>
     </body>
 </html>
