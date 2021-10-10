@@ -55,6 +55,15 @@ class Event {
         });
 
         window.addEventListener('mouseup', function(e) {
+            if(this_.isBeingDraggedState) {
+                let relativeToColumn = this_.getX() % COLUMN_WIDTH;
+                if(relativeToColumn*2 > COLUMN_WIDTH) relativeToColumn -= COLUMN_WIDTH;
+                let relativeToHour = this_.getY() % HOUR_HEIGHT;
+                if(relativeToHour*2 > HOUR_HEIGHT) relativeToHour -= HOUR_HEIGHT;
+                this_.setX(this_.getX() - relativeToColumn);
+                this_.setY(this_.getY() - relativeToHour);
+            }
+
             this_.isBeingDraggedState = false;
         });
 
