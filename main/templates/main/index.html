@@ -24,11 +24,13 @@
 
         <script type="text/javascript">
             {% for event in events %}
-                let event = Event.fromId(`event${ {{ event.pk }} }`);
-                event.title = "{{ event.title }}";
-                event.startTime = "{{ event.get_local_start_time }}";
-                event.endTime = "{{ event.get_local_end_time }}";
-                event.decription = "{{ event.description }}";
+                {
+                    let event = Event.fromId(`event${ {{ event.pk }} }`);
+                    event.title = "{{ event.title }}";
+                    event.startTime = "{{ event.get_local_start_time }}";
+                    event.endTime = "{{ event.get_local_end_time }}";
+                    event.decription = "{{ event.description }}";
+                }
             {% endfor %}
         </script>
     </body>
