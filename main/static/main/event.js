@@ -285,7 +285,7 @@ this_.setY(Math.round(this_.getY()/HOUR_HEIGHT) * HOUR_HEIGHT)
     }
 
     update() {
-        this.#event.innerHTML = `${this.title} ${this.#getStartTime().toString().padStart(2, '0')}:00 - ${this.#getEndTime()}:00 ${this.decription}`;
+        this.#event.innerHTML = `${this.title} ${this.#getStartTime().toString().padStart(2, '0')}:00 - ${this.#getEndTime().toString().padStart(2, '0')}:00 ${this.decription}`;
     }
 
     #getStartTime() {
