@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 
 
 class Event(models.Model):
@@ -23,6 +24,12 @@ class Event(models.Model):
 
     def __str__(self):
         return "%s\n%02d:%02d - %02d:%02d\n%s" % (
-            self.title, self.start_time.hour + 2, self.start_time.minute,
-            self.end_time.hour + 2, self.end_time.minute, self.description
+            self.title, self.get_local_start_time().hour, self.get_local_start_time().minute,
+            self.get_local_end_time().hour, self.get_local_end_time().minute, self.description
         )
+
+    def get_local_start_time(self):
+        return timezone.localtime(self.start_time)
+
+    def get_local_end_time(self):
+        return timezone.localtime(self.end_time)

@@ -1,3 +1,5 @@
+console.log("test");
+
 class Event {
     static #idToEventDict = {}
     static addEventListeners(window, events) {
@@ -60,8 +62,35 @@ class Event {
                 if(relativeToColumn*2 > COLUMN_WIDTH) relativeToColumn -= COLUMN_WIDTH;
                 let relativeToHour = this_.getY() % HOUR_HEIGHT;
                 if(relativeToHour*2 > HOUR_HEIGHT) relativeToHour -= HOUR_HEIGHT;
-                this_.setX(this_.getX() - relativeToColumn);
-                this_.setY(this_.getY() - relativeToHour);
+                let x = this_.getX() - relativeToColumn;
+                let y = this_.getY() - relativeToHour
+                this_.setX(x);
+                this_.setY(y);
+
+                {
+                   let xhr = new XMLHttpRequest();
+                    xhr.open('PUT', '', true);
+                    xhr.setRequestHeader("Content-type", "application/json");
+                    xhr.onreadystatechange = function () {
+                        if (xhr.readyState == 4 && xhr.status == 200) {
+                         console.log("success");
+                        } else console.log("failure");
+                    };
+                    let newStartDay = Math.floor((x - WEEK_VIEW_X1) / COLUMN_WIDTH - 1).toString();
+                    let newStartHour = Math.floor((y - WEEK_VIEW_Y1) / HOUR_HEIGHT - 1).toString();
+                    let newEndDay = Math.floor((x + this_.getWidth() - WEEK_VIEW_X1) / COLUMN_WIDTH - 1).toString();
+                    let newEndHour = Math.floor((y + this_.getHeight() - WEEK_VIEW_Y1) / HOUR_HEIGHT - 1).toString();
+                    console.log(newStartDay);
+                    let data = {
+                        "pk":this_.getPk(),
+                        "new_start_day":newStartDay,
+                        "new_start_hour":newStartHour,
+                        "new_end_day":newEndDay,
+                        "new_end_hour":newEndHour,
+                    }
+                    data = JSON.stringify(data);
+
+                    xhr.send(data);}
             }
 
             this_.isBeingDraggedState = false;
@@ -78,8 +107,10 @@ class Event {
 
                this_.setX(x);
                this_.setY(y);
-           }
-        })
+
+
+                        }
+                        })
     }
 
     isBeingDragged() {
@@ -122,4 +153,9 @@ class Event {
     setY(y) {
         this.#event.style.top = `${y}px`
     }
+
+    getPk() {
+        return this.getId().replace('event', '');
+    }
+
 }

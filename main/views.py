@@ -1,8 +1,12 @@
+import json
+
 from django.http import HttpResponse, Http404
 from django.shortcuts import redirect
 from django.template import loader
+from django.utils import timezone
 from datetime import datetime, date, timedelta
 
+from mycalendar.settings import TIME_ZONE
 from .models import *
 from .week_view import *
 
@@ -25,6 +29,18 @@ def get_index_context(year, week):
 
 
 def index(request, year=date.today().year, week=date.today().isocalendar()[1]):
+    print(timezone.localtime(timezone.now()).year)
+    if request.method == 'PUT':
+        data = json.loads((request.body.__str__())[2:len(request.body.__str__())-1])
+        pk = int(data['pk'])
+        day = int(data['new_start_day']) + 1
+        hours = int(data['new_start_hour'])
+        event = Event.objects.get(pk=pk)
+        event.start_time = datetime.fromisocalendar(year=year, week=week, day=day) + timedelta(hours=hours)
+        hours = int(data['new_end_hour'])
+        event.end_time = datetime.fromisocalendar(year=year, week=week, day=day) + timedelta(hours=hours)
+        event.save()
+
     template = loader.get_template('main/index.html')
     # datetime only supports years between [1,9999]
     # if not (datetime.MINYEAR <= year <= datetime.MAXYEAR):
@@ -42,7 +58,7 @@ def index(request, year=date.today().year, week=date.today().isocalendar()[1]):
         get_index_context(year, week),
         x=0,
         y=0,
-        column_width=150,
+        day_width=150,
         hour_height=35,
     )
 
@@ -52,7 +68,7 @@ def index(request, year=date.today().year, week=date.today().isocalendar()[1]):
         'divs': week_view.divs,
         'week_view_x': week_view.x,
         'week_view_y': week_view.y,
-        'column_width': week_view.column_width,
+        'column_width': week_view.day_width,
         'hour_height': week_view.hour_height,
     }
 
