@@ -1,6 +1,10 @@
 console.log("test");
 
 class Event {
+    static CURSOR_MODE_AUTO = 0
+    static CURSOR_MODE_RESIZE_TOP = 1
+    static CURSOR_MODE_RESIZE_BOT = 2
+    static CURSOR_MODE_DRAG = 3
     static #idToEventDict = {}
     static addEventListeners(window, events) {
         window.addEventListener('mousedown', function(e) {
@@ -18,12 +22,17 @@ class Event {
         });
 
         window.addEventListener('mousemove', function(e) {
+                console.log("wtf");
             for(let i = 0; i < events.length; ++i) {
                 let event = events[i];
                 if(event.isBeingDragged()) {
-                    event.setX(e.pageX - event.lastMousePressEventMouseRelativeX);
-                    event.setY(e.pageY - event.lastMousePressEventMouseRelativeY);
+                    event.setX(e.pageX - event.#lastMousePressEventMouseRelativeX);
+                    event.setY(e.pageY - event.#lastMousePressEventMouseRelativeY);
                 }
+                if(event.isNearTopHorizontalBorder(e.pageX, e.pageY)) {
+                    console.log("testNHB");
+                    document.body.style.cursor = "row-resize";
+                } else document.body.style.cursor = "pointer";
             }
         })
     }
@@ -37,6 +46,10 @@ class Event {
 
     #lastMousePressEventMouseRelativeX;
     #lastMousePressEventMouseRelativeY;
+    #isInTopResizeModeState = false;
+    #isInBotResizeModeState = false;
+    #isBeingTopResizedState = false;
+    #isBeingBotResizedState = false;
 
     constructor(event, window) {
         let this_ = this;
@@ -52,28 +65,43 @@ class Event {
         });
 
         window.addEventListener('mousedown', function(e) {
-            if(this_.isInside(e.pageX, e.pageY)) {
+            if(this_.isInTopResizeMode()) {
+                let y = e.pageY;
+                let height = y - this_.getY() + this_.getHeight();
+                this_.setY(y);
+                this_.setHeight(height);
+                console.log("is")
+                this_.#isBeingTopResizedState = true;
+            } else if(this_.isInBotResizeMode()) {
+                let height = e.pageY - this_.getY();
+                this_.setHeight(height);
+                this_.#isBeingBotResizedState = true;
+            }
+            else if(this_.isInside(e.pageX, e.pageY)) {
                 this_.isBeingDraggedState = true;
             }
         });
 
         window.addEventListener('mouseup', function(e) {
-            if(this_.isBeingDraggedState) {
-                let relativeToColumn = this_.getX() % COLUMN_WIDTH;
-                if(relativeToColumn*2 > COLUMN_WIDTH) relativeToColumn -= COLUMN_WIDTH;
-                let relativeToHour = this_.getY() % HOUR_HEIGHT;
-                if(relativeToHour*2 > HOUR_HEIGHT) relativeToHour -= HOUR_HEIGHT;
-                let x = this_.getX() - relativeToColumn;
-                let y = this_.getY() - relativeToHour
-                this_.setX(x);
-                this_.setY(y);
+            if(this_.isBeingResized()) {
+                if(this_.isBeingTopResized()) {
+                    this_.setY(Math.round(this_.getY()/HOUR_HEIGHT) * HOUR_HEIGHT)
+                    this_.setHeight(Math.round(this_.getHeight()/HOUR_HEIGHT) * HOUR_HEIGHT)
+                    if(this_.getHeight() < HOUR_HEIGHT) this_.setHeight(HOUR_HEIGHT)
+                } else if(this_.isBeingBotResized()) {
+this_.setY(Math.round(this_.getY()/HOUR_HEIGHT) * HOUR_HEIGHT)
+                    this_.setHeight(Math.round(this_.getHeight()/HOUR_HEIGHT) * HOUR_HEIGHT)
+                    if(this_.getHeight() < HOUR_HEIGHT) this_.setHeight(HOUR_HEIGHT)
+                }
 
                 {
+                    let x = this_.getX()
+                    let y = this_.getY()
                    let xhr = new XMLHttpRequest();
                     xhr.open('PUT', '', true);
                     xhr.setRequestHeader("Content-type", "application/json");
                     xhr.onreadystatechange = function () {
-                        if (xhr.readyState == 4 && xhr.status == 200) {
+                        if (xhr.readyState === 4 && xhr.status === 200) {
                          console.log("success");
                         } else console.log("failure");
                     };
@@ -81,7 +109,7 @@ class Event {
                     let newStartHour = Math.floor((y - WEEK_VIEW_Y1) / HOUR_HEIGHT - 1).toString();
                     let newEndDay = Math.floor((x + this_.getWidth() - WEEK_VIEW_X1) / COLUMN_WIDTH - 1).toString();
                     let newEndHour = Math.floor((y + this_.getHeight() - WEEK_VIEW_Y1) / HOUR_HEIGHT - 1).toString();
-                    console.log(newStartDay);
+                    console.log(newStartDay + "lksgjlakjg");
                     let data = {
                         "pk":this_.getPk(),
                         "new_start_day":newStartDay,
@@ -91,7 +119,46 @@ class Event {
                     }
                     data = JSON.stringify(data);
 
-                    xhr.send(data);}
+                    xhr.send(data);}console.log("tegslgjlkjslj")
+
+                this_.update();
+                this_.#isBeingTopResizedState = false;
+                this_.#isBeingBotResizedState = false;
+            }
+            if(this_.isBeingDragged()) {
+                let relativeToColumn = this_.getX() % COLUMN_WIDTH;
+                if(relativeToColumn*2 > COLUMN_WIDTH) relativeToColumn -= COLUMN_WIDTH;
+                let relativeToHour = this_.getY() % HOUR_HEIGHT;
+                if(relativeToHour*2 > HOUR_HEIGHT) relativeToHour -= HOUR_HEIGHT;
+                let x = this_.getX() - relativeToColumn;
+                let y = this_.getY() - relativeToHour;
+                this_.setX(x);
+                this_.setY(y);
+
+                {
+                   let xhr = new XMLHttpRequest();
+                    xhr.open('PUT', '', true);
+                    xhr.setRequestHeader("Content-type", "application/json");
+                    xhr.onreadystatechange = function () {
+                        if (xhr.readyState === 4 && xhr.status === 200) {
+                         console.log("success");
+                        } else console.log("failure");
+                    };
+                    let newStartDay = Math.floor((x - WEEK_VIEW_X1) / COLUMN_WIDTH - 1).toString();
+                    let newStartHour = Math.floor((y - WEEK_VIEW_Y1) / HOUR_HEIGHT - 1).toString();
+                    let newEndDay = Math.floor((x + this_.getWidth() - WEEK_VIEW_X1) / COLUMN_WIDTH - 1).toString();
+                    let newEndHour = Math.floor((y + this_.getHeight() - WEEK_VIEW_Y1) / HOUR_HEIGHT - 1).toString();
+                    console.log(newStartDay + "lksgjlakjg");
+                    let data = {
+                        "pk":this_.getPk(),
+                        "new_start_day":newStartDay,
+                        "new_start_hour":newStartHour,
+                        "new_end_day":newEndDay,
+                        "new_end_hour":newEndHour,
+                    }
+                    data = JSON.stringify(data);
+
+                    xhr.send(data);}console.log("tegslgjlkjslj")
 
                 this_.update();
             }
@@ -100,6 +167,38 @@ class Event {
         });
 
         window.addEventListener('mousemove', function(e) {
+            if(this_.isBeingTopResized()) {
+                let y = e.pageY;
+                let height = this_.getY() - y + this_.getHeight();
+                console.log("y = " + this_.getY())
+                console.log("ey = " + y)
+                console.log("h = " + this_.getHeight())
+                this_.setY(y);
+                this_.setHeight(height);
+                console.log("is")
+                this_.update()
+            } else if(this_.isBeingBotResized()) {
+                let height =  e.pageY - this_.getY();
+                this_.setHeight(height);
+                this_.update()
+            }
+
+            if(this_.isNearTopHorizontalBorder(e.pageX, e.pageY)) {
+                this_.#isInTopResizeModeState = true;
+                document.body.style.cursor = "row-resize";
+            } else if(this_.isNearBotHorizontalBorder(e.pageX, e.pageY)){
+                this_.#isInBotResizeModeState = true;
+                document.body.style.cursor = "row-resize";
+            }
+            else if(this_.isInTopResizeMode()) {
+                    this_.#isInTopResizeModeState = false;
+                    document.body.style.cursor = "auto";
+                } else if(this_.isInBotResizeMode()) {
+                this_.#isInBotResizeModeState = false;
+                document.body.style.cursor = "auto"
+            }
+
+
            if(this_.isBeingDragged()) {
                let x = e.pageX - this_.#lastMousePressEventMouseRelativeX;
                let y = e.pageY - this_.#lastMousePressEventMouseRelativeY;
@@ -127,6 +226,26 @@ class Event {
             y >= this.getY() &&
             y <= (this.getY() + this.getHeight())
         );
+    }
+
+    isNearTopHorizontalBorder(x, y) {
+        if(x >= this.getX() && x <= this.getX() + this.getWidth()) {
+            if(y >= this.getY() - HOUR_HEIGHT/5 && y <= this.getY() + HOUR_HEIGHT/5)
+                return true;
+
+
+        }
+
+        return false;
+    }
+
+    isNearBotHorizontalBorder(x, y) {
+        if(x >= this.getX() && x <= this.getX() + this.getWidth()) {
+            if(y >= this.getY() + this.getHeight() - HOUR_HEIGHT/5 && y <= this.getY() + this.getHeight() + HOUR_HEIGHT/5)
+                return true
+        }
+
+        return false;
     }
 
     getId() {
@@ -157,19 +276,62 @@ class Event {
         this.#event.style.top = `${y}px`
     }
 
+    setHeight(height) {
+        this.#event.style.height = `${height}px`
+    }
+
     getPk() {
         return this.getId().replace('event', '');
     }
 
     update() {
-        this.#event.innerHTML = `${this.title} ${this.#getStartTime()}:00 - ${this.#getEndTime()}:00 ${this.decription}`;
+        this.#event.innerHTML = `${this.title} ${this.#getStartTime().toString().padStart(2, '0')}:00 - ${this.#getEndTime()}:00 ${this.decription}`;
     }
 
     #getStartTime() {
-        return Math.floor(this.getY() / HOUR_HEIGHT) - 1;
+        return Math.round(this.getY() / HOUR_HEIGHT) - 1;
     }
 
     #getEndTime() {
-        return Math.floor((this.getY() + this.getHeight()) / HOUR_HEIGHT) - 1;
+        return Math.round((this.getY() + this.getHeight()) / HOUR_HEIGHT) - 1;
+    }
+
+    isInResizeMode() {
+        return this.#isInBotResizeModeState || this.#isInTopResizeModeState;
+    }
+
+    isBeingResized() {
+        return this.#isBeingTopResizedState || this.#isBeingBotResizedState;
+    }
+
+    cursor_mode(x, y) {
+        if(x >= this.getX() && x <= this.getX() + this.getWidth()) {
+            if(y >= this.getY() - HOUR_HEIGHT/5 && y <= this.getY() + HOUR_HEIGHT/5)
+                return Event.CURSOR_MODE_RESIZE_TOP
+
+            if(y >= this.getY() + this.getHeight() - HOUR_HEIGHT/5 && y <= this.getY() + this.getHeight() + HOUR_HEIGHT/5)
+                return Event.CURSOR_MODE_RESIZE_BOT
+
+            if(y >= this.getY() && y <= this.getY() + this.getHeight())
+                return Event.CURSOR_MODE_DRAG
+        }
+
+        return Event.CURSOR_MODE_AUTO
+    }
+
+    isBeingTopResized() {
+        return this.#isBeingTopResizedState;
+    }
+
+    isBeingBotResized() {
+        return this.#isBeingBotResizedState;
+    }
+
+    isInTopResizeMode() {
+        return this.#isInTopResizeModeState;
+    }
+
+    isInBotResizeMode() {
+        return this.#isInBotResizeModeState;
     }
 }
