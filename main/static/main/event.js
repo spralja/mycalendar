@@ -42,6 +42,7 @@ class Event {
         let this_ = this;
         this.isBeingDraggedState = false;
         this.#event = event;
+
         this.#window = window;
         Event.#idToEventDict[this.getId()] = this;
         this.#event.addEventListener('mousedown', function(e) {
@@ -91,6 +92,8 @@ class Event {
                     data = JSON.stringify(data);
 
                     xhr.send(data);}
+
+                this_.update();
             }
 
             this_.isBeingDraggedState = false;
@@ -107,7 +110,7 @@ class Event {
 
                this_.setX(x);
                this_.setY(y);
-
+                this_.update();
 
                         }
                         })
@@ -158,4 +161,15 @@ class Event {
         return this.getId().replace('event', '');
     }
 
+    update() {
+        this.#event.innerHTML = `${this.title} ${this.#getStartTime()}:00 - ${this.#getEndTime()}:00 ${this.decription}`;
+    }
+
+    #getStartTime() {
+        return Math.floor(this.getY() / HOUR_HEIGHT) - 1;
+    }
+
+    #getEndTime() {
+        return Math.floor((this.getY() + this.getHeight()) / HOUR_HEIGHT) - 1;
+    }
 }

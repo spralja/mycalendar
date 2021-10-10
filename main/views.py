@@ -70,6 +70,7 @@ def index(request, year=date.today().year, week=date.today().isocalendar()[1]):
         'week_view_y': week_view.y,
         'column_width': week_view.day_width,
         'hour_height': week_view.hour_height,
+        'events': get_index_context(year, week),
     }
 
     return HttpResponse(template.render(context, request))
