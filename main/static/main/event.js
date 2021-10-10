@@ -169,6 +169,8 @@ this_.setY(Math.round(this_.getY()/HOUR_HEIGHT) * HOUR_HEIGHT)
         window.addEventListener('mousemove', function(e) {
             if(this_.isBeingTopResized()) {
                 let y = e.pageY;
+                if(e.pageY < HOUR_HEIGHT) y = HOUR_HEIGHT;
+                if(e.pageY > HOUR_HEIGHT*25) y = HOUR_HEIGHT*25
                 let height = this_.getY() - y + this_.getHeight();
                 console.log("y = " + this_.getY())
                 console.log("ey = " + y)
@@ -178,7 +180,10 @@ this_.setY(Math.round(this_.getY()/HOUR_HEIGHT) * HOUR_HEIGHT)
                 console.log("is")
                 this_.update()
             } else if(this_.isBeingBotResized()) {
-                let height =  e.pageY - this_.getY();
+                let y =e.pageY
+                if(e.pageY < HOUR_HEIGHT) y = HOUR_HEIGHT;
+                if(e.pageY > HOUR_HEIGHT*25) y = HOUR_HEIGHT*25
+                let height =  y - this_.getY();
                 this_.setHeight(height);
                 this_.update()
             }
