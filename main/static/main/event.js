@@ -22,6 +22,8 @@ class Event {
     #isBeingBotResizedState = false;
     #isBeingDraggedState = false;
 
+    #lastClickTime = 0;
+
     constructor(event, window) {
         let this_ = this;
         this.#event = event;
@@ -32,6 +34,11 @@ class Event {
             let event = Event.fromId(e.target.id);
             event.#lastMousePressEventMouseRelativeX = e.pageX - event.getX();
             event.#lastMousePressEventMouseRelativeY = e.pageY - event.getY();
+            let now = Date.now();
+            if(now - 500 <= this_.#lastClickTime) {
+                location.href=`event/${this_.getPk()}`;
+            }
+            this_.#lastClickTime = Date.now();
         });
 
         this.#window.addEventListener('mousedown', function(e) {

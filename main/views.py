@@ -74,3 +74,15 @@ def index(request, year=date.today().year, week=date.today().isocalendar()[1]):
     }
 
     return HttpResponse(template.render(context, request))
+
+
+def event(request, year, week, pk):
+    qs = Event.objects.filter(pk=pk);
+    if not qs:
+        raise Http404("No such event");
+    template = loader.get_template('main/event.html')
+    context = {
+        'event': qs[0],
+    }
+
+    return HttpResponse(template.render(context, request))
